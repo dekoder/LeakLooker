@@ -121,7 +121,7 @@ listing_query = '%22Index of /%22'
 cassandra_query = "type:%22cassandra%22"
 rethink_query = "type:%22rethinkdb%22"
 
-BINARYEDGE_API_KEY = ''
+BINARYEDGE_API_KEY = '0a65ef4d-05aa-4855-99e6-0165692b824b'
 be = BinaryEdge(BINARYEDGE_API_KEY)
 
 buckets = set()
