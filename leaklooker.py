@@ -54,6 +54,8 @@ parser.add_argument('--kibana', help='Kibana', action='store_true')
 parser.add_argument("--s3asia", help="Amazon s3 s3.ap-southeast-1", action="store_true")
 parser.add_argument("--s3usa", help="Amazon s3 s3.ap-southeast-1", action="store_true")
 parser.add_argument("--s3europe", help="Amazon s3 s3.ap-southeast-1", action="store_true")
+parser.add_argument("--proxy", help="In the form of socks5://127.0.0.1:9050", action="store")
+parser.add_argument("--minsize", help="Minimum size to consider parsing", action="store", default=25000000000, type=int)
 
 group.add_argument('--first', help='First page', default=None, type=int)
 group.add_argument('--last', help='Last page', default=None, type=int)
@@ -77,6 +79,14 @@ rethink = args.rethink
 s3asia = args.s3asia
 s3usa = args.s3usa
 s3europe = args.s3europe
+
+if args.proxy is not None:
+    proxies = {
+                'http' : args.proxy,
+                'https' : args.proxy
+            }
+else:
+    proxies = None
 
 arr_query = []
 second_part = ""
@@ -136,7 +146,7 @@ def parse_bucket(bucket):
             if len(path) > 1:
                 if path[1] not in buckets:
                     print("https://" + parsed.netloc + "/" + path[1])
-                    amazon_req = requests.get("https://" + parsed.netloc + "/" + path[1], timeout=10)
+                    amazon_req = requests.get("https://" + parsed.netloc + "/" + path[1], timeout=10, proxies=proxies)
                     if amazon_req.status_code == 200:
                         print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
                     elif amazon_req.status_code == 404:
@@ -148,7 +158,7 @@ def parse_bucket(bucket):
             parsed_netloc = parsed.path.split("/")
             if parsed_netloc[3] not in buckets:
                 print("https://" + parsed_netloc[2] + "/" + parsed_netloc[3])
-                amazon_req = requests.get("https://" + parsed_netloc[2] + "/" + parsed_netloc[3], timeout=10)
+                amazon_req = requests.get("https://" + parsed_netloc[2] + "/" + parsed_netloc[3], timeout=10, proxies=proxies)
                 if amazon_req.status_code == 200:
                     print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
                 elif amazon_req.status_code == 404:
@@ -159,7 +169,7 @@ def parse_bucket(bucket):
         else:
             if parsed.netloc not in buckets:
                 print("https://" + parsed.netloc)
-                amazon_req = requests.get("https://" + parsed.netloc)
+                amazon_req = requests.get("https://" + parsed.netloc, proxies=proxies)
                 if amazon_req.status_code == 200:
                     print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
                 elif amazon_req.status_code == 404:
@@ -192,7 +202,7 @@ def check_amazons3(results):
                                     if path[1] not in buckets:
                                         print("https://" + parsed.netloc + "/" + path[1])
                                         amazon_req = requests.get("https://" + parsed.netloc + "/" + path[1],
-                                                                  timeout=10)
+                                                                  timeout=10, proxies=proxies)
                                         print(amazon_req.status_code)
                                         if amazon_req.status_code == 200:
                                             print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
@@ -204,7 +214,7 @@ def check_amazons3(results):
                             else:
                                 if parsed.netloc not in buckets:
                                     print("https://" + parsed.netloc)
-                                    amazon_req = requests.get("https://" + parsed.netloc)
+                                    amazon_req = requests.get("https://" + parsed.netloc, proxies=proxies)
                                     print(amazon_req.status_code)
                                     if amazon_req.status_code == 200:
                                         print("Status: " + Fore.GREEN + str(amazon_req.status_code) + Fore.RESET)
@@ -367,7 +377,7 @@ def check_mongodb(results):
             print('IP: ' + service['target']['ip'] + ":" + str(service['target']['port']))
             if not service['result']['error']:
                 try:
-                    if service['result']['data']['listDatabases']['totalSize'] > 25000000000:
+                    if service['result']['data']['listDatabases']['totalSize'] > argparse.minsize:
                         print("Size: " + Fore.LIGHTBLUE_EX + size(
                             service['result']['data']['listDatabases']['totalSize']) + Fore.RESET)
 
