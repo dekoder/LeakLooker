@@ -56,6 +56,7 @@ parser.add_argument("--s3usa", help="Amazon s3 s3.ap-southeast-1", action="store
 parser.add_argument("--s3europe", help="Amazon s3 s3.ap-southeast-1", action="store_true")
 parser.add_argument("--proxy", help="In the form of socks5://127.0.0.1:9050", action="store")
 parser.add_argument("--minsize", help="Minimum size to consider parsing", action="store", default=25000000000, type=int)
+parser.add_argument("--key", help="BinaryEdge API Key", action="store")
 
 group.add_argument('--first', help='First page', default=None, type=int)
 group.add_argument('--last', help='Last page', default=None, type=int)
@@ -131,7 +132,7 @@ listing_query = '%22Index of /%22'
 cassandra_query = "type:%22cassandra%22"
 rethink_query = "type:%22rethinkdb%22"
 
-BINARYEDGE_API_KEY = '0a65ef4d-05aa-4855-99e6-0165692b824b'
+BINARYEDGE_API_KEY = args.key
 be = BinaryEdge(BINARYEDGE_API_KEY)
 
 buckets = set()
